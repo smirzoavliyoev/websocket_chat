@@ -30,10 +30,12 @@ func main() {
 
 	go handleMessages()
 
-	err := http.ListenAndServe(":8000", nil)
+	log.Println("OK")
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
