@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -48,7 +47,7 @@ func NewChannel(conn *websocket.Conn) Channel {
 		conn: conn,
 		send: make(chan Message, 0),
 	}
-	go channel.reader()
+	// go channel.reader()
 	go channel.writer()
 
 	return channel
@@ -64,7 +63,7 @@ func AnotherOne(w http.ResponseWriter, r *http.Request) {
 	defer channel.conn.Close()
 
 	for {
-		time.Sleep(1 * time.Millisecond)
+		channel.reader()
 	}
 }
 
@@ -91,8 +90,8 @@ func main() {
 	fs := http.FileServer(http.Dir("public"))
 	http.Handle("/", fs)
 
-	http.HandleFunc("/ws", handleConnections)
-	// http.HandleFunc("/ws", AnotherOne)
+	// http.HandleFunc("/ws", handleConnections)
+	http.HandleFunc("/ws", AnotherOne)
 
 	go handleMessages()
 
