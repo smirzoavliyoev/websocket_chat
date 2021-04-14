@@ -4,9 +4,69 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
+
+type Channel struct {
+	conn *websocket.Conn
+	send chan Message
+}
+
+func (this *Channel) reader() {
+
+	var (
+		msg Message
+	)
+
+	for {
+
+		err := this.conn.ReadJSON(&msg)
+		if err != nil {
+			log.Println(err)
+			delete(clients, this.conn)
+		}
+
+		this.send <- msg
+	}
+}
+
+func (this *Channel) writer() {
+
+	for {
+		err := this.conn.WriteJSON(<-this.send)
+		if err != nil {
+			log.Println(err)
+			delete(clients, this.conn)
+		}
+	}
+}
+
+func NewChannel(conn *websocket.Conn) Channel {
+	channel := Channel{
+		conn: conn,
+		send: make(chan Message, 0),
+	}
+	go channel.reader()
+	go channel.writer()
+
+	return channel
+}
+
+func AnotherOne(w http.ResponseWriter, r *http.Request) {
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Fatal("errr", err)
+	}
+	channel := NewChannel(ws)
+
+	defer channel.conn.Close()
+
+	for {
+		time.Sleep(1 * time.Millisecond)
+	}
+}
 
 var (
 	clients   = make(map[*websocket.Conn]bool)
@@ -14,7 +74,11 @@ var (
 )
 
 var (
-	upgrader = websocket.Upgrader{}
+	upgrader = websocket.Upgrader{
+		EnableCompression: true,
+		ReadBufferSize:    1 << 10,
+		WriteBufferSize:   1 << 10,
+	}
 )
 
 type Message struct {
@@ -27,60 +91,18 @@ func main() {
 	fs := http.FileServer(http.Dir("public"))
 	http.Handle("/", fs)
 
-	http.HandleFunc("/ws", handleConnections)
-
-	go handleMessages()
+	http.HandleFunc("/ws", AnotherOne)
 
 	log.Println("OK")
 
 	port := ":" + os.Getenv("PORT")
-	log.Println(port)
-	if port == "" {
+	if port == ":" {
 		port = ":8080"
 	}
+	log.Println(port)
 
 	err := http.ListenAndServe(port, nil)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-}
-
-func handleConnections(w http.ResponseWriter, r *http.Request) {
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer ws.Close()
-
-	clients[ws] = true
-
-	for {
-		var msg Message
-
-		err := ws.ReadJSON(&msg)
-		if err != nil {
-			log.Printf("err: %v", err)
-			delete(clients, ws)
-			break
-		}
-
-		broadcast <- msg
-	}
-
-}
-
-func handleMessages() {
-	for {
-		msg := <-broadcast
-
-		for client := range clients {
-			err := client.WriteJSON(msg)
-			if err != nil {
-				client.Close()
-				delete(clients, client)
-			}
-		}
 	}
 }
