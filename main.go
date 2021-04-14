@@ -100,8 +100,6 @@ func main() {
 	// http.HandleFunc("/ws", handleConnections)
 	http.HandleFunc("/ws", AnotherOne)
 
-	go handleMessages()
-
 	log.Println("OK")
 
 	port := ":" + os.Getenv("PORT")
@@ -113,45 +111,5 @@ func main() {
 	err := http.ListenAndServe(port, nil)
 	if err != nil {
 		log.Fatal(err)
-	}
-}
-
-func handleConnections(w http.ResponseWriter, r *http.Request) {
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer ws.Close()
-
-	clients[ws] = true
-
-	for {
-		var msg Message
-
-		err := ws.ReadJSON(&msg)
-		if err != nil {
-			log.Printf("err: %v", err)
-			delete(clients, ws)
-			break
-		}
-
-		broadcast <- msg
-	}
-}
-
-func handleMessages() {
-
-	for {
-		msg := <-broadcast
-
-		for client := range clients {
-			err := client.WriteJSON(msg)
-			if err != nil {
-				client.Close()
-				delete(clients, client)
-			}
-		}
-
 	}
 }
