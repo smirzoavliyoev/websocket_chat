@@ -64,7 +64,7 @@ func AnotherOne(w http.ResponseWriter, r *http.Request) {
 	defer channel.conn.Close()
 
 	for {
-		time.Sleep(1 * time.Millisecond)
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -75,9 +75,9 @@ var (
 
 var (
 	upgrader = websocket.Upgrader{
-		EnableCompression: true,
-		ReadBufferSize:    1 << 10,
-		WriteBufferSize:   1 << 10,
+		// EnableCompression: true,
+		// ReadBufferSize:    1 << 10,
+		// WriteBufferSize:   1 << 10,
 	}
 )
 
@@ -99,6 +99,7 @@ func main() {
 	if port == ":" {
 		port = ":8080"
 	}
+
 	log.Println(port)
 
 	err := http.ListenAndServe(port, nil)
