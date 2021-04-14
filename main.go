@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/websocket"
 )
@@ -31,6 +32,12 @@ func main() {
 	go handleMessages()
 
 	log.Println("OK")
+
+	port := ":" + os.Getenv("PORT")
+	log.Println(port)
+	if port == "" {
+		port = ":8080"
+	}
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal(err)
