@@ -20,7 +20,6 @@ func (this *Channel) reader() {
 	)
 
 	for {
-
 		err := this.conn.ReadJSON(&msg)
 		if err != nil {
 			log.Println(err)
@@ -59,6 +58,10 @@ func AnotherOne(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("errr", err)
 	}
 	channel := NewChannel(ws)
+
+	defer ws.Close()
+
+	clients[ws] = true
 
 	defer channel.conn.Close()
 
