@@ -33,10 +33,10 @@ func (this *Channel) reader() {
 func (this *Channel) writer() {
 
 	for {
-
+		msg := <-this.send
 		for client := range clients {
 
-			err := client.WriteJSON(<-this.send)
+			err := client.WriteJSON(msg)
 			if err != nil {
 				log.Println(err)
 				delete(clients, this.conn)
