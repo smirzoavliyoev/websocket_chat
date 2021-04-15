@@ -27,8 +27,11 @@ func GetDirOrFilePathFromRoot(root string, target string) (string, error) {
 	}
 
 	for _, v := range dirsAndFiles {
-		if v.Mode().IsDir() {
-			return GetDirOrFilePathFromRoot(root+"/"+v.Name(), target)
+		if v.IsDir() {
+			path, err := GetDirOrFilePathFromRoot(root+"/"+v.Name(), target)
+			if err == nil {
+				return path, nil
+			}
 		}
 	}
 	return "", ErrNoSuchDirOrFile
