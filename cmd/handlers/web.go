@@ -6,5 +6,5 @@ import (
 
 func WebFileServer() http.Handler {
 
-	return http.FileServer(http.Dir("./handlers/public"))
+	return http.FileServer(http.Dir("/app/cmd/handlers/public"))
 }
