@@ -1,19 +1,16 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
-	"os"
+	"websocket_chat/utils"
 )
 
 func WebFileServer() http.Handler {
 
-	dir, err := os.Getwd()
+	path, err := utils.GetDirOrFilePathFromRoot(".", "public")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
-	log.Println(dir)
-
-	return http.FileServer(http.Dir(dir + "/public"))
+	return http.FileServer(http.Dir(path))
 }
