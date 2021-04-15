@@ -12,5 +12,8 @@ func WebFileServer() http.Handler {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Println(dir)
+
 	return http.FileServer(http.Dir(dir + "/public"))
 }
