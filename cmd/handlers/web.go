@@ -1,7 +1,10 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func WebFileServer() http.Handler {
-	return http.FileServer(http.Dir("handlers/public"))
+
+	return http.FileServer(http.Dir("./handlers/public"))
 }
