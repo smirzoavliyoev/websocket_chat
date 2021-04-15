@@ -1,10 +1,16 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
+	"os"
 )
 
 func WebFileServer() http.Handler {
 
-	return http.FileServer(http.Dir("/app/cmd/handlers/public"))
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return http.FileServer(http.Dir(dir + "/public"))
 }
